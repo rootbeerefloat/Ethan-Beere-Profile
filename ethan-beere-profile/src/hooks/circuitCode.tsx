@@ -5,6 +5,8 @@ const pipeWidth = 20;
 const minSpacing = 20;
 const bgColor = '#0d0f2b';
 const pipeColor = '#474b85';
+const sparkColor = '#d3d5f5';
+const sparkRadius = 3.5;
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
     return {
@@ -129,19 +131,6 @@ function drawDNode(ctx: CanvasRenderingContext2D, x: number, y: number, xSpacing
     ctx.fill();
 }
 
-function drawNode(ctx: CanvasRenderingContext2D, x: number, y: number, xSpacing: number, ySpacing: number) {
-    const node = getNode(x, y, xSpacing, ySpacing);
-    ctx.fillStyle = pipeColor;
-    ctx.beginPath();
-    ctx.arc(node.x + xSpacing + (pipeWidth / 2), node.y + ySpacing + (pipeWidth / 2), pipeWidth, 0, 2 * Math.PI);
-    ctx.fillStyle = pipeColor;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(node.x + xSpacing + (pipeWidth / 2), node.y + ySpacing + (pipeWidth / 2), pipeWidth / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = bgColor;
-    ctx.fill();
-}
-
 function generatePipes(xCount: number, yCount: number) {
     let pipes: string[] = [];
 
@@ -210,6 +199,20 @@ function renderPipes(pipes: string[], ctx: CanvasRenderingContext2D, wSpaces: nu
     });
 }
 
+function drawSpark(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    const gradient = ctx.createRadialGradient(x, y, sparkRadius, x, y, sparkRadius * 2);
+    gradient.addColorStop(0, sparkColor + 'FF'); // Fully transparent at the edge
+    gradient.addColorStop(1, sparkColor + '00'); // Fully opaque at the center
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, sparkRadius * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+    ctx.fillStyle = sparkColor;
+    ctx.fill();
+}
+
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
@@ -226,6 +229,7 @@ const animateCircuit = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpaces, wSpacing, hSpacing);
+        drawSpark(ctx, 30, 30);
     });
 };
 
