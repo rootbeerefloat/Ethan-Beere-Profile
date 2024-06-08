@@ -171,6 +171,45 @@ function generatePipes(xCount: number, yCount: number) {
     return pipes;
 }
 
+function renderPipes(pipes: string[], ctx: CanvasRenderingContext2D, wSpaces: number, wSpacing: number, hSpacing: number) {
+    pipes.forEach((pipe, index) => {
+        const x = index % wSpaces;
+        const y = Math.floor(index / wSpaces);
+        switch (pipe) {
+            case "V":
+                drawVerticalPipe(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "H":
+                drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "LU":
+                drawLUElbow(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "RU":
+                drawRUElbow(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "RD":
+                drawRDElbow(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "LD":
+                drawLDElbow(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "L":
+                drawLNode(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "U":
+                drawUNode(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "R":
+                drawRNode(ctx, x, y, wSpacing, hSpacing);
+                break;
+            case "D":
+                drawDNode(ctx, x, y, wSpacing, hSpacing);
+                break;
+        }
+    });
+}
+
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
@@ -186,44 +225,8 @@ const animateCircuit = () => {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
-        pipes.forEach((pipe, index) => {
-            const x = index % wSpaces;
-            const y = Math.floor(index / wSpaces);
-            switch (pipe) {
-                case "V":
-                    drawVerticalPipe(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "H":
-                    drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "LU":
-                    drawLUElbow(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "RU":
-                    drawRUElbow(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "RD":
-                    drawRDElbow(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "LD":
-                    drawLDElbow(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "L":
-                    drawLNode(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "U":
-                    drawUNode(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "R":
-                    drawRNode(ctx, x, y, wSpacing, hSpacing);
-                    break;
-                case "D":
-                    drawDNode(ctx, x, y, wSpacing, hSpacing);
-                    break;
-            }
-        });
-
-    }, [window.innerWidth, window.innerHeight]);
+        renderPipes(pipes, ctx, wSpaces, wSpacing, hSpacing);
+    });
 };
 
 export default animateCircuit;
