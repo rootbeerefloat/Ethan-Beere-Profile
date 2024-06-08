@@ -7,6 +7,7 @@ const bgColor = '#0d0f2b';
 const pipeColor = '#474b85';
 const sparkColor = '#d3d5f5';
 const sparkRadius = 3.5;
+const animationSpeed = 5;
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
     return {
@@ -213,6 +214,26 @@ function drawSpark(ctx: CanvasRenderingContext2D, x: number, y: number) {
     ctx.fill();
 }
 
+function animateSparkHorizontal(ctx: CanvasRenderingContext2D, x: number, y: number, wSpacing: number, hSpacing: number) {
+    const node = getNode(x, y, wSpacing, hSpacing);
+    let animationFrameId: number;
+    const t0 = new Date().getTime();
+    const render = () => {
+        drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
+        const now = new Date().getTime();
+        const tc = now - t0;
+        const t1 = animationSpeed * 1000;
+        const nodeWidth = pipeWidth + wSpacing + wSpacing;
+        const sparkX = node.x + (tc / t1) * nodeWidth;
+        const sparkY = node.y + hSpacing + (pipeWidth / 2);
+        drawSpark(ctx, sparkX, sparkY);
+        if (tc < t1) {
+            animationFrameId = requestAnimationFrame(render);
+        }
+    };
+    render();
+}
+
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
@@ -229,7 +250,11 @@ const animateCircuit = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpaces, wSpacing, hSpacing);
-        drawSpark(ctx, 30, 30);
+        for (let i = 0; i < pipes.length; i++) {
+            if (pipes[i] === "H") {
+                // animateSparkHorizontal(ctx, i % wSpaces, Math.floor(i / wSpaces), wSpacing, hSpacing);
+            }
+        }
     });
 };
 
