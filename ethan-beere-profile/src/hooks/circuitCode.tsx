@@ -133,70 +133,76 @@ function drawDNode(ctx: CanvasRenderingContext2D, x: number, y: number, xSpacing
 }
 
 function generatePipes(xCount: number, yCount: number) {
-    let pipes: string[] = [];
-
-    for (let x = 0; x < xCount; x++) {
-        for (let y = 0; y < yCount; y++) {
+    let pipes: string[][] = [];
+    for (let y = 0; y < yCount; y++) {
+        let row: string[] = [];
+        for (let x = 0; x < xCount; x++) {
             let possibilities: string[] = ["V", "V", "V", "H", "H", "H", "LU", "LU", "LD", "LD", "RU", "RU", "RD", "RD", "L", "U", "R", "D"];
             let left: boolean = true;
-            if (pipes[pipes.length - 1] === "V" || pipes[pipes.length - 1] === "LU" || pipes[pipes.length - 1] === "LD" || pipes[pipes.length - 1] === "L" || pipes[pipes.length - 1] === "U" || pipes[pipes.length - 1] === "D") left = false;
+            if (x > 0) if (row[x - 1] === "V" || row[x - 1] === "LU" || row[x - 1] === "LD" || row[x - 1] === "L" || row[x - 1] === "U" || row[x - 1] === "D") left = false;
+            if (x === 0) {
+                if (Math.random() < 0.5) left = false;
+            }
             let right: boolean = true;
             let up: boolean = true;
-            if (pipes[pipes.length - xCount] === "H" || pipes[pipes.length - xCount] === "RU" || pipes[pipes.length - xCount] === "LU" || pipes[pipes.length - xCount] === "R" || pipes[pipes.length - xCount] === "U" || pipes[pipes.length - xCount] === "L") up = false;
+            if (y > 0) if (pipes[y - 1][x] === "H" || pipes[y - 1][x] === "RU" || pipes[y - 1][x] === "LU" || pipes[y - 1][x] === "R" || pipes[y - 1][x] === "U" || pipes[y - 1][x] === "L") up = false;
+            if (y === 0) {
+                if (Math.random() < 0.5) up = false;
+            }
             let down: boolean = true;
-
             if (y === yCount - 1) down = true;
+
             if (!left) possibilities = possibilities.filter((p) => p !== "LU" && p !== "LD" && p !== "L" && p !== "H");
             if (!right) possibilities = possibilities.filter((p) => p !== "RU" && p !== "RD" && p !== "R" && p !== "H");
             if (!up) possibilities = possibilities.filter((p) => p !== "LU" && p !== "RU" && p !== "U" && p !== "V");
             if (!down) possibilities = possibilities.filter((p) => p !== "LD" && p !== "RD" && p !== "D" && p !== "V");
-
             if (up) possibilities = possibilities.filter((p) => p == "LU" || p == "RU" || p == "U" || p == "V");
             if (left) possibilities = possibilities.filter((p) => p == "LU" || p == "LD" || p == "L" || p == "H");
 
             let pipe: string = possibilities[Math.floor(Math.random() * possibilities.length)];
-            pipes.push(pipe);
+            row.push(pipe);
         }
+        pipes.push(row);
     }
     return pipes;
 }
 
-function renderPipes(pipes: string[], ctx: CanvasRenderingContext2D, wSpaces: number, wSpacing: number, hSpacing: number) {
-    pipes.forEach((pipe, index) => {
-        const x = index % wSpaces;
-        const y = Math.floor(index / wSpaces);
-        switch (pipe) {
-            case "V":
-                drawVerticalPipe(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "H":
-                drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "LU":
-                drawLUElbow(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "RU":
-                drawRUElbow(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "RD":
-                drawRDElbow(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "LD":
-                drawLDElbow(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "L":
-                drawLNode(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "U":
-                drawUNode(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "R":
-                drawRNode(ctx, x, y, wSpacing, hSpacing);
-                break;
-            case "D":
-                drawDNode(ctx, x, y, wSpacing, hSpacing);
-                break;
-        }
+function renderPipes(pipes: string[][], ctx: CanvasRenderingContext2D, wSpacing: number, hSpacing: number) {
+    pipes.forEach((row, y) => {
+        row.forEach((pipe, x) => {
+            switch (pipe) {
+                case "V":
+                    drawVerticalPipe(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "H":
+                    drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "LU":
+                    drawLUElbow(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "RU":
+                    drawRUElbow(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "RD":
+                    drawRDElbow(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "LD":
+                    drawLDElbow(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "L":
+                    drawLNode(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "U":
+                    drawUNode(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "R":
+                    drawRNode(ctx, x, y, wSpacing, hSpacing);
+                    break;
+                case "D":
+                    drawDNode(ctx, x, y, wSpacing, hSpacing);
+                    break;
+            }
+        });
     });
 }
 
@@ -249,12 +255,7 @@ const animateCircuit = () => {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
-        renderPipes(pipes, ctx, wSpaces, wSpacing, hSpacing);
-        for (let i = 0; i < pipes.length; i++) {
-            if (pipes[i] === "H") {
-                // animateSparkHorizontal(ctx, i % wSpaces, Math.floor(i / wSpaces), wSpacing, hSpacing);
-            }
-        }
+        renderPipes(pipes, ctx, wSpacing, hSpacing);
     });
 };
 
