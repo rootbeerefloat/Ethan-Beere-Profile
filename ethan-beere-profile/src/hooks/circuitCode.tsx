@@ -220,19 +220,54 @@ function drawSpark(ctx: CanvasRenderingContext2D, x: number, y: number) {
     ctx.fill();
 }
 
-function animateSparkHorizontal(ctx: CanvasRenderingContext2D, x: number, y: number, wSpacing: number, hSpacing: number) {
+function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpacing: number, hSpacing: number, pipe: string, direction: string) {
     const node = getNode(x, y, wSpacing, hSpacing);
     let animationFrameId: number;
     const t0 = new Date().getTime();
     const render = () => {
-        drawHorizontalPipe(ctx, x, y, wSpacing, hSpacing);
         const now = new Date().getTime();
         const tc = now - t0;
         const t1 = animationSpeed * 1000;
         const nodeWidth = pipeWidth + wSpacing + wSpacing;
-        const sparkX = node.x + (tc / t1) * nodeWidth;
-        const sparkY = node.y + hSpacing + (pipeWidth / 2);
-        drawSpark(ctx, sparkX, sparkY);
+
+
+        if (pipe === "H") {
+            let sparkX = 0;
+            let sparkY = 0;
+            if (direction === "L") {
+                sparkX = node.x + (tc / t1) * nodeWidth;
+                sparkY = node.y + hSpacing + (pipeWidth / 2);
+            }
+            else {
+                sparkX = node.x + nodeWidth - (tc / t1) * nodeWidth;
+                sparkY = node.y + hSpacing + (pipeWidth / 2);
+            }
+            ctx.clearRect(node.x - (sparkRadius * 2), node.y + hSpacing, nodeWidth + (sparkRadius * 4), pipeWidth);
+            drawSpark(ctx, sparkX, sparkY);
+        }
+
+
+        if (pipe === "V") {
+            let sparkX = 0;
+            let sparkY = 0;
+            if (direction === "D") {
+                sparkX = node.x + wSpacing + (pipeWidth / 2);
+                sparkY = node.y + (tc / t1) * nodeWidth;
+            }
+            else {
+                sparkX = node.x + wSpacing + (pipeWidth / 2);
+                sparkY = node.y + nodeWidth - (tc / t1) * nodeWidth;
+            }
+            ctx.clearRect(node.x + wSpacing, node.y - (sparkRadius * 2), pipeWidth, nodeWidth + (sparkRadius * 4));
+            drawSpark(ctx, sparkX, sparkY);
+        }
+
+
+        if (pipe === "LU") {
+
+        }
+
+
         if (tc < t1) {
             animationFrameId = requestAnimationFrame(render);
         }
@@ -243,8 +278,11 @@ function animateSparkHorizontal(ctx: CanvasRenderingContext2D, x: number, y: num
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
+        const sparkCanvas = document.getElementById('SparkCanvas') as HTMLCanvasElement;
         canvas.width = window.innerWidth;
+        sparkCanvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        sparkCanvas.height = window.innerHeight;
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         const wSpaces = Math.floor((canvasWidth - minSpacing) / (pipeWidth + minSpacing + minSpacing));
@@ -252,10 +290,18 @@ const animateCircuit = () => {
         const wSpacing = Math.ceil((canvasWidth - (wSpaces * pipeWidth)) / (wSpaces * 2));
         const hSpacing = Math.ceil((canvasHeight - (hSpaces * pipeWidth)) / (hSpaces * 2));
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+        const sparkCtx = sparkCanvas.getContext('2d') as CanvasRenderingContext2D;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
+        for (let y = 0; y < hSpaces; y++) {
+            for (let x = 0; x < wSpaces; x++) {
+                if (pipes[y][x] === "H" || pipes[y][x] === "V") {
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
+                }
+            }
+        }
     });
 };
 
