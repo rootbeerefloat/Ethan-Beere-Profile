@@ -9,6 +9,504 @@ const sparkColor = '#d3d5f5';
 const sparkRadius = 6;
 const animationSpeed = 2;
 const clear = true;
+const debug = true;
+const testPipes = [
+    [
+        "LU",
+        "RD",
+        "L",
+        "RU",
+        "LD",
+        "RD",
+        "L",
+        "RU",
+        "H",
+        "LU",
+        "RU",
+        "LD",
+        "RU",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "D",
+        "V",
+        "D",
+        "V",
+        "V",
+        "V",
+        "V",
+        "R",
+        "LU",
+        "RD",
+        "LU",
+        "RU",
+        "LU",
+        "R"
+    ],
+    [
+        "H",
+        "LU",
+        "RD",
+        "H",
+        "LU",
+        "RU",
+        "H",
+        "LD",
+        "D",
+        "R",
+        "H",
+        "LU",
+        "R",
+        "L",
+        "V",
+        "V",
+        "RD",
+        "LU",
+        "V",
+        "V",
+        "U",
+        "V",
+        "RU",
+        "LU",
+        "R",
+        "L",
+        "V",
+        "R",
+        "L",
+        "D",
+        "RD"
+    ],
+    [
+        "L",
+        "D",
+        "V",
+        "D",
+        "D",
+        "RD",
+        "LD",
+        "RU",
+        "LU",
+        "RD",
+        "LD",
+        "RD",
+        "H",
+        "H",
+        "LU",
+        "V",
+        "V",
+        "RD",
+        "LU",
+        "U",
+        "D",
+        "RU",
+        "LD",
+        "D",
+        "RD",
+        "LD",
+        "V",
+        "RD",
+        "H",
+        "LU",
+        "U"
+    ],
+    [
+        "L",
+        "V",
+        "V",
+        "V",
+        "RU",
+        "LU",
+        "V",
+        "D",
+        "RD",
+        "LU",
+        "V",
+        "V",
+        "D",
+        "RD",
+        "H",
+        "LU",
+        "RU",
+        "LU",
+        "R",
+        "L",
+        "RU",
+        "LD",
+        "V",
+        "U",
+        "V",
+        "RU",
+        "LU",
+        "V",
+        "RD",
+        "LD",
+        "RD"
+    ],
+    [
+        "D",
+        "RU",
+        "LU",
+        "U",
+        "RD",
+        "LD",
+        "RU",
+        "LU",
+        "RU",
+        "LD",
+        "V",
+        "V",
+        "V",
+        "RU",
+        "H",
+        "H",
+        "L",
+        "D",
+        "RD",
+        "H",
+        "LD",
+        "V",
+        "V",
+        "D",
+        "V",
+        "D",
+        "D",
+        "V",
+        "U",
+        "RU",
+        "LU"
+    ],
+    [
+        "LU",
+        "RD",
+        "LD",
+        "RD",
+        "LU",
+        "V",
+        "R",
+        "H",
+        "H",
+        "LU",
+        "V",
+        "U",
+        "RU",
+        "LD",
+        "RD",
+        "H",
+        "LD",
+        "V",
+        "V",
+        "R",
+        "LU",
+        "RU",
+        "LU",
+        "V",
+        "V",
+        "U",
+        "V",
+        "RU",
+        "LD",
+        "RD",
+        "LD"
+    ],
+    [
+        "LD",
+        "V",
+        "RU",
+        "LU",
+        "D",
+        "RU",
+        "LD",
+        "RD",
+        "L",
+        "RD",
+        "LU",
+        "D",
+        "R",
+        "LU",
+        "RU",
+        "H",
+        "LU",
+        "U",
+        "V",
+        "RD",
+        "H",
+        "LD",
+        "D",
+        "U",
+        "V",
+        "RD",
+        "LU",
+        "D",
+        "V",
+        "V",
+        "RU"
+    ],
+    [
+        "V",
+        "U",
+        "RD",
+        "LD",
+        "V",
+        "R",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "D",
+        "RU",
+        "H",
+        "H",
+        "LD",
+        "RD",
+        "H",
+        "H",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "RU",
+        "LD",
+        "RU",
+        "LU",
+        "V",
+        "RD"
+    ],
+    [
+        "V",
+        "RD",
+        "LU",
+        "U",
+        "V",
+        "R",
+        "LD",
+        "V",
+        "V",
+        "D",
+        "RU",
+        "LD",
+        "RD",
+        "LD",
+        "V",
+        "RU",
+        "H",
+        "LD",
+        "RD",
+        "LU",
+        "V",
+        "R",
+        "LU",
+        "V",
+        "R",
+        "L",
+        "V",
+        "D",
+        "D",
+        "V",
+        "V"
+    ],
+    [
+        "V",
+        "RU",
+        "H",
+        "L",
+        "V",
+        "RD",
+        "LU",
+        "RU",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "V",
+        "V",
+        "RU",
+        "L",
+        "R",
+        "LU",
+        "RU",
+        "H",
+        "LU",
+        "RD",
+        "H",
+        "LU",
+        "RD",
+        "L",
+        "U",
+        "RU",
+        "LU",
+        "U",
+        "V"
+    ],
+    [
+        "U",
+        "RD",
+        "H",
+        "H",
+        "LU",
+        "V",
+        "R",
+        "H",
+        "LD",
+        "RU",
+        "LU",
+        "D",
+        "V",
+        "RU",
+        "H",
+        "H",
+        "H",
+        "H",
+        "L",
+        "RD",
+        "LD",
+        "V",
+        "RD",
+        "H",
+        "LU",
+        "R",
+        "H",
+        "LD",
+        "RD",
+        "LD",
+        "V"
+    ],
+    [
+        "H",
+        "LU",
+        "R",
+        "L",
+        "RD",
+        "LU",
+        "R",
+        "L",
+        "RU",
+        "H",
+        "H",
+        "LU",
+        "V",
+        "R",
+        "H",
+        "L",
+        "R",
+        "LD",
+        "RD",
+        "LU",
+        "U",
+        "V",
+        "V",
+        "D",
+        "RD",
+        "H",
+        "LD",
+        "U",
+        "V",
+        "V",
+        "RU"
+    ],
+    [
+        "H",
+        "LD",
+        "RD",
+        "L",
+        "V",
+        "D",
+        "D",
+        "R",
+        "LD",
+        "RD",
+        "L",
+        "RD",
+        "LU",
+        "RD",
+        "H",
+        "LD",
+        "RD",
+        "LU",
+        "V",
+        "RD",
+        "LD",
+        "V",
+        "V",
+        "V",
+        "U",
+        "RD",
+        "LU",
+        "D",
+        "RU",
+        "LU",
+        "R"
+    ],
+    [
+        "RD",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "V",
+        "RU",
+        "H",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "RD",
+        "LU",
+        "D",
+        "U",
+        "RU",
+        "H",
+        "LU",
+        "RU",
+        "LU",
+        "RU",
+        "LU",
+        "RU",
+        "L",
+        "V",
+        "D",
+        "RU",
+        "H",
+        "H",
+        "LD"
+    ],
+    [
+        "LU",
+        "RD",
+        "LU",
+        "V",
+        "RD",
+        "LU",
+        "R",
+        "H",
+        "L",
+        "V",
+        "RU",
+        "H",
+        "LU",
+        "RD",
+        "LU",
+        "D",
+        "RD",
+        "L",
+        "RD",
+        "L",
+        "R",
+        "H",
+        "L",
+        "D",
+        "R",
+        "LU",
+        "V",
+        "RD",
+        "LD",
+        "RD",
+        "LU"
+    ]
+];
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
     return {
@@ -384,7 +882,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             }
 
             if (clear) ctx.clearRect(node.x - (sparkRadius * 2), node.y - (sparkRadius * 2), nodeWidth + (sparkRadius * 4), nodeWidth + (sparkRadius * 4));
-            drawSpark(ctx, sparkX, sparkY);
+            if (tc < t1) drawSpark(ctx, sparkX, sparkY);
         }
 
         if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") { // Endpoint
@@ -471,7 +969,6 @@ function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
     let paths: { x: number, y: number }[][] = [];
     while (origins.length > 0) {
         const origin = origins[0];
-        console.log("Processing Origin ", origin)
         const x1 = origin.x;
         const y1 = origin.y;
         let x = x1;
@@ -540,41 +1037,18 @@ function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
 
 function animatePath(ctx: CanvasRenderingContext2D, path: { x: number, y: number }[], wSpacing: number, hSpacing: number, pipes: string[][], reverse: boolean) {
     if (reverse) path = path.reverse();
-    for (let i = 0; i < path.length - 1; i++) {
-        const x = path[i].x;
-        const y = path[i].y;
-        const pipe = pipes[y][x];
-        let direction = "";
-        if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") {
-            if (i === 0) direction = "OUT";
-            else direction = "IN";
-        }
-        if (pipe === "H") {
-            if (path[i + 1].x > x) direction = "R";
-            else direction = "L";
-        }
-        if (pipe === "V") {
-            if (path[i + 1].y > y) direction = "D";
-            else direction = "U";
-        }
+    console.log(path.length);
+    path.forEach((node) => {
+        let pipe = pipes[node.y][node.x];
+        let direction = "IN";
         if (pipe === "LU") {
-            if (path[i + 1].x < x) direction = "L";
-            else direction = "U";
+            if (path.length === 1) {
+                if (Math.random() < 0.5) direction = "L";
+                else direction = "U";
+            }
         }
-        if (pipe === "RU") {
-            if (path[i + 1].x > x) direction = "R";
-            else direction = "U";
-        }
-        if (pipe === "RD") {
-            if (path[i + 1].x > x) direction = "R";
-            else direction = "D";
-        }
-        if (pipe === "LD") {
-            if (path[i + 1].x < x) direction = "L";
-            else direction = "D";
-        }
-        animateSpark(ctx, x, y, wSpacing, hSpacing, pipe, direction);
-    }
+        animateSpark(ctx, node.x, node.y, wSpacing, hSpacing, pipe, direction);
+    });
 }
 
 const animateCircuit = () => {
@@ -595,7 +1069,9 @@ const animateCircuit = () => {
         const sparkCtx = sparkCanvas.getContext('2d') as CanvasRenderingContext2D;
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const pipes = generatePipes(wSpaces, hSpaces);
+        let pipes: string[][];
+        if (debug) pipes = testPipes;
+        else pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
         const paths = getPaths(wSpaces, hSpaces, pipes);
         animatePath(sparkCtx, paths[0], wSpacing, hSpacing, pipes, false);
