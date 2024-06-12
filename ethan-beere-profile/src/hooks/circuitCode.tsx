@@ -311,17 +311,17 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
 
             if (verticalComponent) { // Vertical
                 sparkX = node.x + wSpacing + (pipeWidth / 2);
-                if (direction === "U" && (pipe === "LU" || pipe === "RU")) { // Case 1: Enter spark from top on top side
+                if (direction === "U" && (pipe === "LU" || pipe === "RU")) { // Case 1: Enter spark from top on top side, start
                     sparkY = node.y + (tc / (tv1 - tv0)) * hSpacing;
                 }
-                if (direction === "D" && (pipe === "LD" || pipe === "RD")) { // Case 2: Enter spark from bottom on bottom side
+                if (direction === "D" && (pipe === "LD" || pipe === "RD")) { // Case 2: Enter spark from bottom on bottom side, start
                     sparkY = node.y + nodeWidth - (tc / (tv1 - tv0)) * hSpacing;
                 }
-                if ((direction === "L" || direction === "R") && (pipe === "LD" || pipe === "RD")) { // Case 3: Enter spark from top on bottom side
-                    sparkY = node.y + hSpacing + pipeWidth + (tc / (tv1 - tv0)) * hSpacing;
+                if ((direction === "L" || direction === "R") && (pipe === "LD" || pipe === "RD")) { // Case 3: Enter spark from top on bottom side, finish
+                    sparkY = node.y + hSpacing + pipeWidth + (((tc - tv0) / (tv1 - tv0)) * hSpacing);
                 }
-                if ((direction === "L" || direction === "R") && (pipe === "LU" || pipe === "RU")) { // Case 4: Enter spark from bottom on top side
-                    sparkY = node.y + hSpacing + pipeWidth - (tc / (tv1 - tv0)) * hSpacing;
+                if ((direction === "L" || direction === "R") && (pipe === "LU" || pipe === "RU")) { // Case 4: Enter spark from bottom on top side, finish
+                    sparkY = node.y + hSpacing - (((tc - tv0) / (tv1 - tv0)) * hSpacing);
                 }
             }
 
@@ -426,19 +426,19 @@ const animateCircuit = () => {
                 }
                 if (pipes[y][x] === "LU") {
                     const direction = Math.random() < 0.5 ? "L" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "U");
                 }
                 if (pipes[y][x] === "RU") {
                     const direction = Math.random() < 0.5 ? "R" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "U");
                 }
                 if (pipes[y][x] === "RD") {
                     const direction = Math.random() < 0.5 ? "R" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "R");
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
                 }
                 if (pipes[y][x] === "LD") {
                     const direction = Math.random() < 0.5 ? "L" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
                 }
             }
         }
