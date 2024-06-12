@@ -8,6 +8,7 @@ const pipeColor = '#474b85';
 const sparkColor = '#d3d5f5';
 const sparkRadius = 6;
 const animationSpeed = 5;
+const clear = false;
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
     return {
@@ -242,7 +243,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
                 sparkX = node.x + nodeWidth - (tc / t1) * nodeWidth;
                 sparkY = node.y + hSpacing + (pipeWidth / 2);
             }
-            ctx.clearRect(node.x - (sparkRadius * 2), node.y + hSpacing, nodeWidth + (sparkRadius * 4), pipeWidth);
+            if (clear) ctx.clearRect(node.x - (sparkRadius * 2), node.y + hSpacing, nodeWidth + (sparkRadius * 4), pipeWidth);
             drawSpark(ctx, sparkX, sparkY);
         }
 
@@ -258,7 +259,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
                 sparkX = node.x + wSpacing + (pipeWidth / 2);
                 sparkY = node.y + nodeWidth - (tc / t1) * nodeWidth;
             }
-            ctx.clearRect(node.x + wSpacing, node.y - (sparkRadius * 2), pipeWidth, nodeWidth + (sparkRadius * 4));
+            if (clear) ctx.clearRect(node.x + wSpacing, node.y - (sparkRadius * 2), pipeWidth, nodeWidth + (sparkRadius * 4));
             drawSpark(ctx, sparkX, sparkY);
         }
 
@@ -272,7 +273,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             let tv1 = 0; // Time to end the vertical animation
             if (direction === "L" || direction === "R") { // If the spark is coming from the left or right, start the horizontal animation first
                 th0 = 0;
-                th1 = t0 + (t1 / 3);
+                th1 = th0 + (t1 / 3);
                 ta0 = th1;
                 ta1 = ta0 + (t1 / 3);
                 tv0 = ta1;
@@ -280,7 +281,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             }
             if (direction === "U" || direction === "D") { // If the spark is coming from the top or bottom, start the vertical animation first
                 tv0 = 0;
-                tv1 = t0 + (t1 / 3);
+                tv1 = tv0 + (t1 / 3);
                 ta0 = tv1;
                 ta1 = ta0 + (t1 / 3);
                 th0 = ta1;
@@ -292,7 +293,6 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             const horizontalComponent: boolean = th0 <= tc && tc < th1;
             const verticalComponent: boolean = tv0 <= tc && tc < tv1;
             const arcComponent: boolean = ta0 <= tc && tc < ta1;
-
             if (horizontalComponent) { // Horizontal
                 sparkY = node.y + hSpacing + (pipeWidth / 2);
                 if (direction === "L" && (pipe === "LU" || pipe === "LD")) { // Case 1: Enter spark from left on left side
@@ -301,10 +301,10 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
                 if (direction === "R" && (pipe === "RU" || pipe === "RD")) { // Case 2: Enter spark from right on right side
                     sparkX = node.x + nodeWidth - (tc / (th1 - th0)) * wSpacing;
                 }
-                if (direction === "L" && (pipe === "RU" || pipe === "RD")) { // Case 3: Enter spark from left on right side
+                if ((direction === "U" || direction === "D") && (pipe === "RU" || pipe === "RD")) { // Case 3: Enter spark from left on right side
                     sparkX = node.x + wSpacing + pipeWidth + (tc / (th1 - th0)) * wSpacing;
                 }
-                if (direction === "R" && (pipe === "LU" || pipe === "LD")) { // Case 4: Enter spark from right on left side
+                if ((direction === "U" || direction === "D") && (pipe === "LU" || pipe === "LD")) { // Case 4: Enter spark from right on left side
                     sparkX = node.x + wSpacing + pipeWidth - (tc / (th1 - th0)) * wSpacing;
                 }
             }
@@ -317,30 +317,72 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
                 if (direction === "D" && (pipe === "LD" || pipe === "RD")) { // Case 2: Enter spark from bottom on bottom side
                     sparkY = node.y + nodeWidth - (tc / (tv1 - tv0)) * hSpacing;
                 }
-                if (direction === "U" && (pipe === "LD" || pipe === "RD")) { // Case 3: Enter spark from top on bottom side
+                if ((direction === "L" || direction === "R") && (pipe === "LD" || pipe === "RD")) { // Case 3: Enter spark from top on bottom side
                     sparkY = node.y + hSpacing + pipeWidth + (tc / (tv1 - tv0)) * hSpacing;
                 }
-                if (direction === "D" && (pipe === "LU" || pipe === "RU")) { // Case 4: Enter spark from bottom on top side
+                if ((direction === "L" || direction === "R") && (pipe === "LU" || pipe === "RU")) { // Case 4: Enter spark from bottom on top side
                     sparkY = node.y + hSpacing + pipeWidth - (tc / (tv1 - tv0)) * hSpacing;
                 }
             }
 
             if (arcComponent) { // Arc
-                let angle = 0;
-                if (pipe === "LU") angle = Math.PI / 2;
-                if (pipe === "RU") angle = Math.PI;
-                if (pipe === "RD") angle = 3 * Math.PI / 2;
-                if (pipe === "LD") angle = 0;
-                let radius = pipeWidth;
-                let centerX = node.x + wSpacing + pipeWidth;
-                let centerY = node.y + hSpacing + pipeWidth;
-                let sparkAngle = angle + (tc / (ta1 - ta0)) * Math.PI / 2;
-                sparkX = centerX + radius * Math.cos(sparkAngle);
-                sparkY = centerY + radius * Math.sin(sparkAngle);
+                let startAngle = 0;
+                let endAngle = 0;
+                let centerX = 0;
+                let centerY = 0;
+                const radius = pipeWidth / 2;
+                centerX = node.x + wSpacing;
+                centerY = node.y + hSpacing;
+                if (pipe === "LD") {
+                    centerY += pipeWidth;
+                    if (direction === "L") {
+                        startAngle = 3 * Math.PI / 2;
+                        endAngle = Math.PI * 2;
+                    }
+                    if (direction === "D") {
+                        startAngle = Math.PI * 2;
+                        endAngle = 3 * Math.PI / 2;
+                    }
+                }
+                if (pipe === "LU") {
+                    if (direction === "L") {
+                        startAngle = Math.PI / 2;
+                        endAngle = 0;
+                    }
+                    if (direction === "U") {
+                        startAngle = 0;
+                        endAngle = Math.PI / 2;
+                    }
+                }
+                if (pipe === "RU") {
+                    centerX += pipeWidth;
+                    if (direction === "U") {
+                        startAngle = Math.PI;
+                        endAngle = Math.PI / 2;
+                    }
+                    if (direction === "R") {
+                        startAngle = Math.PI / 2;
+                        endAngle = Math.PI;
+                    }
+                }
+                if (pipe === "RD") {
+                    centerX += pipeWidth;
+                    centerY += pipeWidth;
+                    if (direction === "R") {
+                        startAngle = 3 * Math.PI / 2;
+                        endAngle = Math.PI;
+                    }
+                    if (direction === "D") {
+                        startAngle = Math.PI;
+                        endAngle = 3 * Math.PI / 2;
+                    }
+                }
+                const currentAngle = startAngle + ((tc - ta0) / (ta1 - ta0)) * (endAngle - startAngle);
+                sparkX = centerX + radius * Math.cos(currentAngle);
+                sparkY = centerY + radius * Math.sin(currentAngle);
             }
 
-            // ctx.clearRect(node.x - (sparkRadius * 2), node.y - (sparkRadius * 2), nodeWidth + (sparkRadius * 4), nodeWidth + (sparkRadius * 4));
-            console.log(sparkX, sparkY);
+            if (clear) ctx.clearRect(node.x - (sparkRadius * 2), node.y - (sparkRadius * 2), nodeWidth + (sparkRadius * 4), nodeWidth + (sparkRadius * 4));
             drawSpark(ctx, sparkX, sparkY);
         }
 
@@ -372,17 +414,31 @@ const animateCircuit = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
-        let animate = true;
         for (let y = 0; y < hSpaces; y++) {
             for (let x = 0; x < wSpaces; x++) {
-                if (pipes[y][x] === "H" || pipes[y][x] === "V") {
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
+                if (pipes[y][x] === "H") {
+                    const direction = Math.random() < 0.5 ? "L" : "R";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
-                if (pipes[y][x] === "LU" || pipes[y][x] === "LD") {
-                    if (animate) {
-                        animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "L");
-                        animate = false;
-                    }
+                if (pipes[y][x] === "V") {
+                    const direction = Math.random() < 0.5 ? "U" : "D";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                }
+                if (pipes[y][x] === "LU") {
+                    const direction = Math.random() < 0.5 ? "L" : "U";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                }
+                if (pipes[y][x] === "RU") {
+                    const direction = Math.random() < 0.5 ? "R" : "U";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                }
+                if (pipes[y][x] === "RD") {
+                    const direction = Math.random() < 0.5 ? "R" : "D";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "R");
+                }
+                if (pipes[y][x] === "LD") {
+                    const direction = Math.random() < 0.5 ? "L" : "D";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
             }
         }
