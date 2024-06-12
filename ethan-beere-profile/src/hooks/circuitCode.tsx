@@ -1,5 +1,4 @@
 // src/hooks/useHelloWorld.ts
-import { pipe } from 'gsap';
 import { useEffect } from 'react';
 
 const pipeWidth = 20;
@@ -8,7 +7,7 @@ const bgColor = '#0d0f2b';
 const pipeColor = '#474b85';
 const sparkColor = '#d3d5f5';
 const sparkRadius = 6;
-const animationSpeed = 5;
+const animationSpeed = 2;
 const clear = true;
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
@@ -539,6 +538,45 @@ function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
     return paths;
 }
 
+function animatePath(ctx: CanvasRenderingContext2D, path: { x: number, y: number }[], wSpacing: number, hSpacing: number, pipes: string[][], reverse: boolean) {
+    if (reverse) path = path.reverse();
+    for (let i = 0; i < path.length - 1; i++) {
+        const x = path[i].x;
+        const y = path[i].y;
+        const pipe = pipes[y][x];
+        let direction = "";
+        if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") {
+            if (i === 0) direction = "OUT";
+            else direction = "IN";
+        }
+        if (pipe === "H") {
+            if (path[i + 1].x > x) direction = "R";
+            else direction = "L";
+        }
+        if (pipe === "V") {
+            if (path[i + 1].y > y) direction = "D";
+            else direction = "U";
+        }
+        if (pipe === "LU") {
+            if (path[i + 1].x < x) direction = "L";
+            else direction = "U";
+        }
+        if (pipe === "RU") {
+            if (path[i + 1].x > x) direction = "R";
+            else direction = "U";
+        }
+        if (pipe === "RD") {
+            if (path[i + 1].x > x) direction = "R";
+            else direction = "D";
+        }
+        if (pipe === "LD") {
+            if (path[i + 1].x < x) direction = "L";
+            else direction = "D";
+        }
+        animateSpark(ctx, x, y, wSpacing, hSpacing, pipe, direction);
+    }
+}
+
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
@@ -559,7 +597,8 @@ const animateCircuit = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
-        console.log(getPaths(wSpaces, hSpaces, pipes))
+        const paths = getPaths(wSpaces, hSpaces, pipes);
+        animatePath(sparkCtx, paths[0], wSpacing, hSpacing, pipes, false);
     });
 };
 
