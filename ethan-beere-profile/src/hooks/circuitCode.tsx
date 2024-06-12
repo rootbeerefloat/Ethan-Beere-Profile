@@ -1,4 +1,5 @@
 // src/hooks/useHelloWorld.ts
+import { pipe } from 'gsap';
 import { useEffect } from 'react';
 
 const pipeWidth = 20;
@@ -8,7 +9,7 @@ const pipeColor = '#474b85';
 const sparkColor = '#d3d5f5';
 const sparkRadius = 6;
 const animationSpeed = 5;
-const clear = false;
+const clear = true;
 
 function getNode(x: number, y: number, xSpacing: number, ySpacing: number) {
     return {
@@ -391,7 +392,6 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             let sparkX = 0;
             let sparkY = 0;
             const th = t1 / 2;
-            console.log(tc / t1)
             if (pipe === "L") {
                 if (direction === "IN") {
                     sparkX = node.x + ((tc / t1) * nodeWidth);
@@ -448,6 +448,97 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
     render();
 }
 
+function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
+    let origins: { x: number, y: number }[] = [];
+    for (let y = 0; y < hSpaces; y++) {
+        for (let x = 0; x < wSpaces; x++) {
+            if (x === 0 && (pipes[y][x] === "H" || pipes[y][x] === "LU" || pipes[y][x] === "LD" || pipes[y][x] === "L")) {
+                origins.push({ x: x, y: y });
+            }
+            if (x == wSpaces - 1 && (pipes[y][x] === "H" || pipes[y][x] === "RU" || pipes[y][x] === "RD" || pipes[y][x] === "R")) {
+                origins.push({ x: x, y: y });
+            }
+            if (y === 0 && (pipes[y][x] === "V" || pipes[y][x] === "RU" || pipes[y][x] === "LU" || pipes[y][x] === "U")) {
+                origins.push({ x: x, y: y });
+            }
+            if (y === hSpaces - 1 && (pipes[y][x] === "V" || pipes[y][x] === "RD" || pipes[y][x] === "LD" || pipes[y][x] === "D")) {
+                origins.push({ x: x, y: y });
+            }
+            if (pipes[y][x] === "L" || pipes[y][x] === "U" || pipes[y][x] === "R" || pipes[y][x] === "D") {
+                origins.push({ x: x, y: y });
+            }
+        }
+    }
+    let paths: { x: number, y: number }[][] = [];
+    while (origins.length > 0) {
+        const origin = origins[0];
+        console.log("Processing Origin ", origin)
+        const x1 = origin.x;
+        const y1 = origin.y;
+        let x = x1;
+        let y = y1;
+        let instances = 0;
+        origins.forEach((o) => {
+            if (o.x === x && o.y === y) instances++;
+        });
+        if (instances > 1) {
+            paths.push([{ x: x, y: y }]);
+            origins = origins.filter(o => o.x !== x || o.y !== y);
+        }
+        else {
+            origins = origins.filter(o => o.x !== x || o.y !== y);
+            let morePath = true;
+            let prev: { x: number, y: number } = { x: x, y: y };
+            let path: { x: number, y: number }[] = [];
+            let timeout = 0;
+            while (morePath && timeout < 50) {
+                path.push({ x: x, y: y });
+                let possibilities: { x: number, y: number }[] = []
+                if (pipes[y][x] === "H") possibilities = [{ x: x - 1, y: y }, { x: x + 1, y: y }];
+                if (pipes[y][x] === "V") possibilities = [{ x: x, y: y - 1 }, { x: x, y: y + 1 }];
+                if (pipes[y][x] === "LU") possibilities = [{ x: x - 1, y: y }, { x: x, y: y - 1 }];
+                if (pipes[y][x] === "RU") possibilities = [{ x: x + 1, y: y }, { x: x, y: y - 1 }];
+                if (pipes[y][x] === "RD") possibilities = [{ x: x + 1, y: y }, { x: x, y: y + 1 }];
+                if (pipes[y][x] === "LD") possibilities = [{ x: x - 1, y: y }, { x: x, y: y + 1 }];
+                if (pipes[y][x] === "L") possibilities = [{ x: x - 1, y: y }];
+                if (pipes[y][x] === "U") possibilities = [{ x: x, y: y - 1 }];
+                if (pipes[y][x] === "R") possibilities = [{ x: x + 1, y: y }];
+                if (pipes[y][x] === "D") possibilities = [{ x: x, y: y + 1 }];
+                for (let i = 0; i < possibilities.length; i++) {
+                    if (possibilities[i].x === prev.x && possibilities[i].y === prev.y) {
+                        possibilities.splice(i, 1);
+                        break;
+                    }
+                }
+                if (x === 0) possibilities = possibilities.filter(p => p.x !== x - 1);
+                if (x === wSpaces - 1) possibilities = possibilities.filter(p => p.x !== x + 1);
+                if (y === 0) possibilities = possibilities.filter(p => p.y !== y - 1);
+                if (y === hSpaces - 1) possibilities = possibilities.filter(p => p.y !== y + 1);
+                prev = { x: x, y: y };
+                if (origins.filter(o => o.x === x && o.y === y).length > 0) {
+                    path.push({ x: x, y: y });
+                    origins = origins.filter(o => o.x !== x || o.y !== y);
+                    morePath = false;
+                }
+                else {
+                    if (possibilities.length === 0) {
+                        x = 0;
+                        y = 0;
+                    }
+                    else {
+                        const next = possibilities[Math.floor(Math.random() * possibilities.length)];
+                        x = next.x;
+                        y = next.y;
+                    }
+                }
+                timeout++;
+            }
+            paths.push(path);
+        }
+    }
+    return paths;
+}
+
 const animateCircuit = () => {
     useEffect(() => {
         const canvas = document.getElementById('CircuitCanvas') as HTMLCanvasElement;
@@ -468,38 +559,7 @@ const animateCircuit = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
-        for (let y = 0; y < hSpaces; y++) {
-            for (let x = 0; x < wSpaces; x++) {
-                if (pipes[y][x] === "H") {
-                    const direction = Math.random() < 0.5 ? "L" : "R";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "V") {
-                    const direction = Math.random() < 0.5 ? "U" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "LU") {
-                    const direction = Math.random() < 0.5 ? "L" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "RU") {
-                    const direction = Math.random() < 0.5 ? "R" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "RD") {
-                    const direction = Math.random() < 0.5 ? "R" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "LD") {
-                    const direction = Math.random() < 0.5 ? "L" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-                if (pipes[y][x] === "L" || pipes[y][x] === "U" || pipes[y][x] === "R" || pipes[y][x] === "D") {
-                    const direction = Math.random() < 0.5 ? "IN" : "OUT";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
-                }
-            }
-        }
+        console.log(getPaths(wSpaces, hSpaces, pipes))
     });
 };
 
