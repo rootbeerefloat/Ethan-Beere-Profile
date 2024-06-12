@@ -302,10 +302,10 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
                     sparkX = node.x + nodeWidth - (tc / (th1 - th0)) * wSpacing;
                 }
                 if ((direction === "U" || direction === "D") && (pipe === "RU" || pipe === "RD")) { // Case 3: Enter spark from left on right side
-                    sparkX = node.x + wSpacing + pipeWidth + (tc / (th1 - th0)) * wSpacing;
+                    sparkX = node.x + wSpacing + pipeWidth + (((tc - th0) / (th1 - th0)) * wSpacing);
                 }
                 if ((direction === "U" || direction === "D") && (pipe === "LU" || pipe === "LD")) { // Case 4: Enter spark from right on left side
-                    sparkX = node.x + wSpacing + pipeWidth - (tc / (th1 - th0)) * wSpacing;
+                    sparkX = node.x + wSpacing - (((tc - th0) / (th1 - th0)) * wSpacing);
                 }
             }
 
@@ -426,19 +426,19 @@ const animateCircuit = () => {
                 }
                 if (pipes[y][x] === "LU") {
                     const direction = Math.random() < 0.5 ? "L" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "U");
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
                 if (pipes[y][x] === "RU") {
                     const direction = Math.random() < 0.5 ? "R" : "U";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "U");
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
                 if (pipes[y][x] === "RD") {
                     const direction = Math.random() < 0.5 ? "R" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
                 if (pipes[y][x] === "LD") {
                     const direction = Math.random() < 0.5 ? "L" : "D";
-                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], "D");
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
             }
         }
