@@ -230,6 +230,7 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
         const tc = now - t0;
         const t1 = animationSpeed * 1000;
         const nodeWidth = pipeWidth + wSpacing + wSpacing;
+        const nodeHeight = pipeWidth + hSpacing + hSpacing;
 
 
         if (pipe === "H") { // Horizontal
@@ -386,6 +387,59 @@ function animateSpark(ctx: CanvasRenderingContext2D, x: number, y: number, wSpac
             drawSpark(ctx, sparkX, sparkY);
         }
 
+        if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") { // Endpoint
+            let sparkX = 0;
+            let sparkY = 0;
+            const th = t1 / 2;
+            console.log(tc / t1)
+            if (pipe === "L") {
+                if (direction === "IN") {
+                    sparkX = node.x + ((tc / t1) * nodeWidth);
+                }
+                else {
+                    sparkX = node.x + nodeWidth - ((tc / t1) * nodeWidth);
+                }
+                sparkY = node.y + hSpacing + (pipeWidth / 2);
+            }
+            if (pipe === "U") {
+                if (direction === "IN") {
+                    sparkY = node.y + ((tc / t1) * nodeWidth);
+                }
+                else {
+                    sparkY = node.y + nodeWidth - ((tc / t1) * nodeWidth);
+                }
+                sparkX = node.x + wSpacing + (pipeWidth / 2);
+            }
+            if (pipe === "R") {
+                if (direction === "IN") {
+                    sparkX = node.x + nodeWidth - ((tc / t1) * nodeWidth);
+                }
+                else {
+                    sparkX = node.x + ((tc / t1) * nodeWidth);
+                }
+                sparkY = node.y + hSpacing + (pipeWidth / 2);
+            }
+            if (pipe === "D") {
+                if (direction === "IN") {
+                    sparkY = node.y + nodeWidth - ((tc / t1) * nodeWidth);
+                }
+                else {
+                    sparkY = node.y + ((tc / t1) * nodeWidth);
+                }
+                sparkX = node.x + wSpacing + (pipeWidth / 2);
+            }
+            if ((tc > th && direction === "IN") || (tc < th && direction === "OUT")) {
+                sparkX = node.x + nodeWidth / 2;
+                sparkY = node.y + nodeHeight / 2;
+            }
+            if (clear) ctx.clearRect(node.x - (sparkRadius * 2), node.y - (sparkRadius * 2), nodeWidth + (sparkRadius * 4), nodeWidth + (sparkRadius * 4));
+            drawSpark(ctx, sparkX, sparkY);
+            ctx.beginPath();
+            ctx.arc(node.x + (nodeWidth / 2), node.y + (nodeHeight / 2), pipeWidth / 2, 0, 2 * Math.PI);
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+        }
+
 
         if (tc < t1) {
             animationFrameId = requestAnimationFrame(render);
@@ -438,6 +492,10 @@ const animateCircuit = () => {
                 }
                 if (pipes[y][x] === "LD") {
                     const direction = Math.random() < 0.5 ? "L" : "D";
+                    animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
+                }
+                if (pipes[y][x] === "L" || pipes[y][x] === "U" || pipes[y][x] === "R" || pipes[y][x] === "D") {
+                    const direction = Math.random() < 0.5 ? "IN" : "OUT";
                     animateSpark(sparkCtx, x, y, wSpacing, hSpacing, pipes[y][x], direction);
                 }
             }
