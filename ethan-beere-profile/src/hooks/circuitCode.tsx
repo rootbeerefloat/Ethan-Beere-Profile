@@ -1012,7 +1012,6 @@ function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
                 if (y === hSpaces - 1) possibilities = possibilities.filter(p => p.y !== y + 1);
                 prev = { x: x, y: y };
                 if (origins.filter(o => o.x === x && o.y === y).length > 0) {
-                    path.push({ x: x, y: y });
                     origins = origins.filter(o => o.x !== x || o.y !== y);
                     morePath = false;
                 }
@@ -1037,14 +1036,31 @@ function getPaths(wSpaces: number, hSpaces: number, pipes: string[][]) {
 
 function animatePath(ctx: CanvasRenderingContext2D, path: { x: number, y: number }[], wSpacing: number, hSpacing: number, pipes: string[][], reverse: boolean) {
     if (reverse) path = path.reverse();
-    console.log(path.length);
-    path.forEach((node) => {
+    console.log(path)
+    path.forEach((node, i) => {
         let pipe = pipes[node.y][node.x];
         let direction = "IN";
-        if (pipe === "LU") {
-            if (path.length === 1) {
-                if (Math.random() < 0.5) direction = "L";
-                else direction = "U";
+        if (path.length === 1) {
+            if (Math.random() < 0.5) {
+                if (pipe === "H") direction = "U";
+                if (pipe === "V") direction = "L";
+                if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") direction = "IN";
+                if (pipe === "LU" || pipe === "LD") direction = "L";
+                if (pipe === "RU" || pipe === "RD") direction = "R";
+            }
+            else {
+                if (pipe === "H") direction = "D";
+                if (pipe === "V") direction = "R";
+                if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") direction = "OUT";
+                if (pipe === "LU" || pipe === "RU") direction = "U";
+                if (pipe === "LD" || pipe === "RD") direction = "D";
+            }
+        }
+        else {
+            console.log(i, pipe)
+            if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") {
+                if (i === 0) direction = "OUT";
+                if (i === path.length - 1) direction = "IN";
             }
         }
         animateSpark(ctx, node.x, node.y, wSpacing, hSpacing, pipe, direction);
@@ -1074,7 +1090,8 @@ const animateCircuit = () => {
         else pipes = generatePipes(wSpaces, hSpaces);
         renderPipes(pipes, ctx, wSpacing, hSpacing);
         const paths = getPaths(wSpaces, hSpaces, pipes);
-        animatePath(sparkCtx, paths[0], wSpacing, hSpacing, pipes, false);
+        console.log(paths)
+        animatePath(sparkCtx, paths[1], wSpacing, hSpacing, pipes, false);
     });
 };
 
