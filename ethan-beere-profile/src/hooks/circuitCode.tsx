@@ -1057,10 +1057,35 @@ function animatePath(ctx: CanvasRenderingContext2D, path: { x: number, y: number
             }
         }
         else {
-            console.log(i, pipe)
+            let prevDirection = "NA";
+            let nextDirection = "NA";
+            if (i > 0) {
+                const prevNode = path[i - 1];
+                const xDiff = node.x - prevNode.x;
+                const yDiff = node.y - prevNode.y;
+                if (xDiff === 1) prevDirection = "R";
+                if (xDiff === -1) prevDirection = "L";
+                if (yDiff === 1) prevDirection = "D";
+                if (yDiff === -1) prevDirection = "U";
+            }
+            if (i < path.length - 1) {
+                const nextNode = path[i + 1];
+                const xDiff = nextNode.x - node.x;
+                const yDiff = nextNode.y - node.y;
+                if (xDiff === 1) nextDirection = "R";
+                if (xDiff === -1) nextDirection = "L";
+                if (yDiff === 1) nextDirection = "D";
+                if (yDiff === -1) nextDirection = "U";
+            }
             if (pipe === "L" || pipe === "U" || pipe === "R" || pipe === "D") {
                 if (i === 0) direction = "OUT";
                 if (i === path.length - 1) direction = "IN";
+            }
+            else {
+
+            }
+            if (nextDirection === "NA") {
+                if (((pipe === "LU" || pipe === "RU") && prevDirection !== "U") || (pipe === "V" && prevDirection == "D")) direction = "U";
             }
         }
         animateSpark(ctx, node.x, node.y, wSpacing, hSpacing, pipe, direction);
